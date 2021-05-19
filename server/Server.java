@@ -16,13 +16,13 @@ public class Server {
 	private static DataOutputStream dos;
 
 	public static void main(String[] args){
+		try {
+			charactersDB = new CharactersDB (CHARACTERS_DB_NAME);
+		} catch (IOException ex) {
+			System.err.println ("Error opening database!");
+			System.exit (-1);
+		}
 		for(;;) {
-			try {
-				charactersDB = new CharactersDB (CHARACTERS_DB_NAME);
-			} catch (IOException ex) {
-				System.err.println ("Error opening database!");
-				System.exit (-1);
-			}
 			try {
 				ServerSocket ss = new ServerSocket(port);
 				Socket s = ss.accept();
