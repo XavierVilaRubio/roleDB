@@ -4,8 +4,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.InputStreamReader;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.EOFException;
 
@@ -33,36 +31,25 @@ public class Server {
 				dos = new DataOutputStream (s.getOutputStream());
 
 				int option = 0;
-				//Mentres no rebi 5 anem llegint
-				// for(;;) {
-					try {
-						option = dis.readInt();
-                        // System.out.println(option);
-                        switch (option) {
-						case 1:
-							serverListNames();
-							break;
-						case 2:
-							serverInfoFromOneCharacter();
-							break;
-						case 3:
-							serverAddCharacter();
-							break;
-						case 4:
-							serverDeleteCharacter();
-							break;
-						case 5:
-							// quit();
-							break;
-					    }
-					    // System.out.println();
-					} catch (EOFException e) {
-						dos.close();
-						dis.close();
-						s.close();
-						System.exit (0);
-					}
-				// }
+				try {
+					option = dis.readInt();
+                    switch (option) {
+					case 1:
+						serverListNames();
+						break;
+					case 2:
+						serverInfoFromOneCharacter();
+						break;
+					case 3:
+						serverAddCharacter();
+						break;
+					case 4:
+						serverDeleteCharacter();
+						break;
+				    }
+				} catch (EOFException e) {
+					e.printStackTrace();
+				}
 
 			} catch (Exception e){
 				e.printStackTrace();

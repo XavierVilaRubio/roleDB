@@ -1,30 +1,28 @@
 //Cristian Oprea & Xavier Vila
 
 import java.net.Socket;
+import java.util.concurrent.TimeUnit;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.EOFException;
 
 public class Client {
 
     private static String address = "localhost";
     private static int port = 1235;
+	private static Socket s;
 	private static DataInputStream  dis;
 	private static DataOutputStream dos;
 	private static BufferedReader in;
 
     public static void main(String[] args) {
-        try {
-			in = new BufferedReader (new InputStreamReader (System.in));
-			
-			int option = 0;
-            //Mentres no envii 5 anem enviant
-			while (option != 5)
-			{
-				Socket s = new Socket(address, port);
+		for (;;) {
+        	try {
+				in = new BufferedReader (new InputStreamReader (System.in));
+				int option = 0;
+				s = new Socket(address, port);
 				dis = new DataInputStream  (s.getInputStream());
 				dos = new DataOutputStream (s.getOutputStream());
 				printMenu();
@@ -43,22 +41,47 @@ public class Client {
 						clientDeleteCharacter();
 						break;
 					case 5:
-						System.exit (0);
+						quit();
 						break;
-				}
-				System.out.println();
-				dis.close();
-				dos.close();
-				s.close();
+					}
+					System.out.println();
+				} catch (Exception e) {
+					// e.printStackTrace();
+					System.err.println("Servidor ocupat. Reintentant connexió en 5 segons.");
+					try {
+						TimeUnit.SECONDS.sleep(5);
+					} catch (InterruptedException e1) {
+						e1.printStackTrace();
+					}
 			}
-			in.close();
-			
-        } catch (Exception e) {
-            // e.printStackTrace();
-            System.err.println("Servidor ocupat. Torna-ho a intentar aviat.");
-        }
+		}
     }
+	
+	private static void printMenu() {
+		System.out.println ("Menú d'opcions:");
+		System.out.println ("1 - Llista tots els noms de personatge.");
+		System.out.println ("2 - Obté la informació d'un personatge.");
+		System.out.println ("3 - Afegeix un personatge.");
+		System.out.println ("4 - Elimina un personatge.");
+		System.out.println ("5 - Sortir.");
+	}
 
+	private static int getOption() {
+		for (;;) {
+			try {
+				System.out.println ("Escull una opció: ");
+				String optionStr = in.readLine();
+				int option = Integer.parseInt (optionStr);
+				if (0 < option && option <= 5) {
+					return option;
+				}
+			} catch (Exception ex) {
+				System.err.println ("Error reading option.");
+			}
+		}
+	}
+	
+	
 	private static void clientListNames() throws IOException {
 		dos.writeInt(1);
 		int numCharacters = dis.readInt();
@@ -67,7 +90,7 @@ public class Client {
 			System.out.println(dis.readUTF());
 		}
 	}
-
+	
 	private static void clientInfoFromOneCharacter() throws IOException {
 		System.out.println ("Escriu el nom del personatge: ");
 		String name;
@@ -87,7 +110,7 @@ public class Client {
 			System.out.println ("Personatge no trobat.");
 		}
 	}
-
+	
 	private static void clientAddCharacter() throws IOException {
 		CharacterInfo character;
 		try {
@@ -157,28 +180,16 @@ public class Client {
 		dos.writeUTF(name);
 		System.out.println(dis.readUTF());
 	}
-
-    private static void printMenu() {
-		System.out.println ("Menú d'opcions:");
-		System.out.println ("1 - Llista tots els noms de personatge.");
-		System.out.println ("2 - Obté la informació d'un personatge.");
-		System.out.println ("3 - Afegeix un personatge.");
-		System.out.println ("4 - Elimina un personatge.");
-		System.out.println ("5 - Sortir.");
-	}
-
-	private static int getOption() {
-		for (;;) {
-			try {
-				System.out.println ("Escull una opció: ");
-				String optionStr = in.readLine();
-				int option = Integer.parseInt (optionStr);
-				if (0 < option && option <= 5) {
-					return option;
-				}
-			} catch (Exception ex) {
-				System.err.println ("Error reading option.");
-			}
+	
+	private static void quit() {
+		try {
+			dos.writeInt(5);
+			dis.close();
+			dos.close();
+			s.close();
+			System.exit (0);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
     
