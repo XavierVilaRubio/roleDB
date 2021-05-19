@@ -1,0 +1,94 @@
+//Cristian Oprea & Xavier Vila
+
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.EOFException;
+
+public class Server {
+
+	private static int port = 1235;
+
+	public static void main(String[] args){
+		try {
+			ServerSocket ss = new ServerSocket(port);
+			Socket s = ss.accept();
+			ss.close();
+			DataInputStream  dis = new DataInputStream  (s.getInputStream());
+			DataOutputStream dos = new DataOutputStream (s.getOutputStream());
+
+			Thread reader = new Thread(new Reader(s, dis, dos));
+			reader.start();
+
+		} catch (Exception e){
+			e.printStackTrace();
+		}
+	}
+
+	public static class Reader implements Runnable {
+
+		private Socket s;
+		private DataInputStream dis;
+		private DataOutputStream dos;
+
+		public Reader(Socket socket, DataInputStream dis, DataOutputStream dos) {
+			this.s = socket;
+			this.dis = dis;
+			this.dos = dos;
+		}
+
+		@Override
+		public void run() {
+			try {
+				int option = 0;
+				//Mentres no rebi 5 anem llegint
+				while (option != 5) {
+					try {
+						option = dis.readInt();
+					} catch (EOFException e) {
+						dos.close();
+						dis.close();
+						s.close();
+						System.exit (0);
+					}
+					switch (option) {
+						case 1:
+							// listNames();
+							break;
+						case 2:
+							// infoFromOneCharacter();
+							break;
+						case 3:
+							// addCharacter();
+							break;
+						case 4:
+							// deleteCharacter();
+							break;
+						case 5:
+							// quit();
+							break;
+					}
+					System.out.println();
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			} finally {
+				// Quan arribi aquí haurá sortit del while, per tant haurà rebut FI i haurà d'acabar
+				try {
+					dos.close();
+					dis.close();
+					s.close();
+					System.exit (0);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+	}
+
+}
