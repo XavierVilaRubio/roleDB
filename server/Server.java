@@ -14,47 +14,27 @@ public class Server {
 	private static int port = 1235;
     private static final String CHARACTERS_DB_NAME = "charactersDB.dat";
 	private static CharactersDB charactersDB;
+	private static DataInputStream  dis;
+	private static DataOutputStream dos;
 
 	public static void main(String[] args){
-		try {
-			charactersDB = new CharactersDB (CHARACTERS_DB_NAME);
-		} catch (IOException ex) {
-			System.err.println ("Error opening database!");
-			System.exit (-1);
-		}
-		try {
-			ServerSocket ss = new ServerSocket(port);
-			Socket s = ss.accept();
-			ss.close();
-			DataInputStream  dis = new DataInputStream  (s.getInputStream());
-			DataOutputStream dos = new DataOutputStream (s.getOutputStream());
-
-			Thread reader = new Thread(new Reader(s, dis, dos));
-			reader.start();
-
-		} catch (Exception e){
-			e.printStackTrace();
-		}
-	}
-
-	public static class Reader implements Runnable {
-
-		private Socket s;
-		private static DataInputStream dis;
-		private static DataOutputStream dos;
-
-		public Reader(Socket socket, DataInputStream dis, DataOutputStream dos) {
-			this.s = socket;
-			this.dis = dis;
-			this.dos = dos;
-		}
-
-		@Override
-		public void run() {
+		for(;;) {
 			try {
+				charactersDB = new CharactersDB (CHARACTERS_DB_NAME);
+			} catch (IOException ex) {
+				System.err.println ("Error opening database!");
+				System.exit (-1);
+			}
+			try {
+				ServerSocket ss = new ServerSocket(port);
+				Socket s = ss.accept();
+				ss.close();
+				dis = new DataInputStream  (s.getInputStream());
+				dos = new DataOutputStream (s.getOutputStream());
+
 				int option = 0;
 				//Mentres no rebi 5 anem llegint
-				for(;;) {
+				// for(;;) {
 					try {
 						option = dis.readInt();
                         // System.out.println(option);
@@ -82,22 +62,13 @@ public class Server {
 						s.close();
 						System.exit (0);
 					}
-				}
-			} catch (IOException e) {
+				// }
+
+			} catch (Exception e){
 				e.printStackTrace();
-			} finally {
-				// Quan arribi aquí haurá sortit del while, per tant haurà rebut FI i haurà d'acabar
-				try {
-					dos.close();
-					dis.close();
-					s.close();
-					System.exit (0);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
 			}
 		}
-
+	}
 		private static void serverListNames() throws IOException {
 			int numCharacters = charactersDB.getNumCharacters();
 			dos.writeInt(numCharacters);
@@ -133,7 +104,7 @@ public class Server {
 			}
 		}
 
-		private void serverAddCharacter() throws IOException {
+		private static void serverAddCharacter() throws IOException {
 			byte[] personatge = new byte[CharacterInfo.SIZE];
 			dis.read(personatge);
 			try {
@@ -148,7 +119,7 @@ public class Server {
 			}
 		}
 
-		private void serverDeleteCharacter() throws IOException {
+		private static void serverDeleteCharacter() throws IOException {
 			try {
 				boolean success = charactersDB.deleteByName (dis.readUTF());
 				if (success) {
@@ -162,5 +133,3 @@ public class Server {
 		}
 
 	}
-
-}
