@@ -22,9 +22,6 @@ public class Client {
         	try {
 				in = new BufferedReader (new InputStreamReader (System.in));
 				int option = 0;
-				s = new Socket(address, port);
-				dis = new DataInputStream  (s.getInputStream());
-				dos = new DataOutputStream (s.getOutputStream());
 				printMenu();
 				option = getOption();
 				switch (option) {
@@ -56,6 +53,12 @@ public class Client {
 			}
 		}
     }
+
+	private static void connectToServer() throws IOException {
+		s = new Socket(address, port);
+		dis = new DataInputStream  (s.getInputStream());
+		dos = new DataOutputStream (s.getOutputStream());
+	}
 	
 	private static void printMenu() {
 		System.out.println ("Menú d'opcions:");
@@ -83,6 +86,7 @@ public class Client {
 	
 	
 	private static void clientListNames() throws IOException {
+		connectToServer();
 		dos.writeInt(1);
 		int numCharacters = dis.readInt();
 		System.out.println();
@@ -100,6 +104,7 @@ public class Client {
 			System.err.println ("Error while reading name!");
 			return;
 		}
+		connectToServer();
 		dos.writeInt(2);
 		dos.writeUTF(name);
 		if(dis.readBoolean()) {
@@ -162,6 +167,7 @@ public class Client {
 			System.err.println ("Error while reading character 	information!");
 			return;
 		}
+		connectToServer();
 		dos.writeInt(3);
 		dos.write(character.toBytes());
 		System.out.println(dis.readUTF());
@@ -176,6 +182,7 @@ public class Client {
 			System.err.println ("Error while reading name!");
 			return;
 		}
+		connectToServer();
 		dos.writeInt(4);
 		dos.writeUTF(name);
 		System.out.println(dis.readUTF());
